@@ -8,9 +8,19 @@
 
 /*global Drupal, GMarker */
 
+Drupal.behaviors.gmap = function () {	  
+  //Initialize the link between gmap-marker items in a table and the gmap map
+  $(".gmap-marker").each(function(i) {
+     $(this).hover(function(){Drupal.gmap.highlight_marker(i);},function(){Drupal.gmap.clear_marker(i);});
+  });	
+}
+
 // Replace to override marker creation
 Drupal.gmap.factory.marker = function (loc, opts) {
-  return new GMarker(loc, opts);
+  //return new GMarker(loc, opts);
+  
+  //SJ edit, PdMarkers have greater control over map markers such as ref from outside map
+  return new PdMarker(loc, opts);
 };
 
 Drupal.gmap.addHandler('gmap', function (elem) {
@@ -29,3 +39,32 @@ Drupal.gmap.addHandler('gmap', function (elem) {
     obj.map.clearOverlays();
   });
 });
+
+
+//gmap call to highlight a marker on the map
+Drupal.gmap.highlight_marker = function(id)
+{
+	var map = Drupal.gmap.getMap('gmap-auto1map-gmap0').map;
+
+	//marker id's do not start at 0? I assume that all ids are sequential from the initial???
+	var marker = map.getFirstMarker();
+	var internalId = marker.getId() + id;
+	
+	var marker = map.getMarkerById(internalId);
+	marker.topMarkerZIndex(); // bring marker to top  
+	marker.setImage("/sites/all/modules/contrib/gmap/markers/yellow-number"+(id+1)+".png"); // change graphic
+}
+
+//gmap call to remove the highlight but still keep the marker at top
+Drupal.gmap.clear_marker = function(id)
+{
+	var map = Drupal.gmap.getMap('gmap-auto1map-gmap0').map;
+	
+	//marker id's do not start at 0? I assume that all ids are sequential from the initial???
+	var marker = map.getFirstMarker();
+	var internalId = marker.getId() + id;
+	
+	var marker = map.getMarkerById(internalId);
+	marker.restoreImage();
+	//marker.restoreMarkerZIndex();  
+}
